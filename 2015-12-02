@@ -1,6 +1,6 @@
 # Scala preivew
 
-#### 함수적 자료구조(funtional data structure)
+#### 3.1 함수적 자료구조(funtional data structure)
 오직 순수 함으로만으로 조작되는 자료구조.
 순수함수 자료 = 변경하거나 side effect가 발생하면 안된다
 > `불변(immutable)` 해야 한다
@@ -36,3 +36,66 @@ object List{
 `case` : data constructor <br>
 `Nil` : 빈 목록 (Empty Collection) <br>
 `Cons` : 비어 있지 않은 목록(Constructor의 줄임말) <br>
+
+
+
+#### 4.1 예외의 장단점
+
+> 참조에 투명하다 = 그것이 지칭하는 값으로치환해도 프로그램의 의미가 변하지 않는다
+
+```scala
+
+// example 1
+def failingFn(i: Int): Int = {
+  val y: Int = throw new Excpetion("fail!")
+  try{
+    val x = 42 + 5
+    x + y
+  } catch { case e: Exception => 43 }
+}
+// example 1의 결과
+// scala> failingFn(12)
+// java.lang.Excpetion: fail!
+//  at  .failingFn(<console>:8)
+
+// example 2
+def failingFn2(i: Int): Int = {
+  try{
+    val x = 42 + 5
+    x + ((throw new Excpetion("fail!")): Int)
+  } catch { case e: Exception => 43 }
+}
+// example 2의 결과
+// scala> failingFn(12)
+// res1: Int = 43
+
+```
+위 예제를 보면, 예외의 주된 문제는 다음 두가지와 같다
+1. `예외는 참조 투명성을 위반하고 문맥 의존성을 도입한다.` y의 exception 치환으로 인해 문맥에 의존하게 되었다.(여기서는 try-catch)
+치환모형의 간단한 추론이 불가능해지고 예외에 기초한 혼란스러운 코드가 만들어 진다.
+2. `예외는 형식에 안전하지 않다.` 함수의 시그니처만 봤을때 이 함수가 예외를 던질 수 있다는 사실을 전혀 알 수 없으므로, 컴파일러는 해당 함수에게 그 예외를 처리하라고 강제할 수 없다.
+
+> 이러한 단점들이 없으면서 예외의 기본 장점인 `오류 처리 논리의 통합과 중앙집중화`를 유지하는 방법으로, `예외를 던지는 대신, 예외적인 조건이 발생했음을 뜻하는 값을 돌려준다`는 대안기법을 소개한다.
+
+- 대안1. `가짜 값을 돌려준다(ex: Double.NaN)` -> 사용하지 않음(p63 참고)
+- 대안2. `에러가 발생했을때 무엇을 해야하는지 말해주는 인수를 호출자가 지정` -> 사용하지 않음(p64 참고)
+- 대안3. `Option` 자료 형식 사용
+- 대안4. `Either` 자료 형식 사용
+
+###### Option 자료형식
+> 오류 처리 전략을 호출자에게로 미루는 것!!!!!!!!!!!!
+
+`예제`
+1. Map에서 주어진 키를 찾는 함수는 `Option`을 돌려줌
+2. 목록과 기타 반복 가능 자료형식에 정의된 `headOption`과 `lastOption`은 순차열이 비지 않은 경우 첫 요소 또는 마지막 요소를 담은 `Option`을 돌려줌
+
+###### Either 자료형식
+> 예외가 발생했을때 `None`밖에 리턴하지 못하는 `Option`에 비해서, 실패 원인을 추적할 수 있는 자료형
+
+```scala
+sealed trait Either[+E, +A]
+case class Left[+E](value: E) extends Either[E, Nothing]
+case class Right[+A](value: A) extends Either[Nothing, A]
+```
+
+위 예제에서 Right 생성자는 성공을 나타내고(오른쪽(right)이 옳은(right)에서 비롯됨), Left는 실패에서 사용한다.

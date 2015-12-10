@@ -1,0 +1,38 @@
+# Scala preivew
+
+#### 함수적 자료구조(funtional data structure)
+오직 순수 함으로만으로 조작되는 자료구조.
+순수함수 자료 = 변경하거나 side effect가 발생하면 안된다
+> `불변(immutable)` 해야 한다
+
+```scala
+package fpinscala.datastructures
+
+sealed trait List[+A]
+case object Nil extends List[Nothing]
+case class Cons[+A](head: A, tail: List[A]) extends List[A]
+
+object List{
+  def sum(ints: List[Int]): Int = ints match {
+    case nil => 0
+    case Cons(x,xs) => x + sum(xs)
+  }
+}
+
+  def product(ds: List{double]): Double = ds match{
+    case Nil => 1.0
+    case Cons(0.0, _) => 0.0
+    case Cons(x,xs) => x * product(xs)
+  }
+
+  def apply[A](as: A*): List[A] =
+    if (as.isEmpty) Nil
+    else Cons(as.head, apply(as.tail: _*))
+
+```
+
+`trait` : 추상 인터페이스 자료형 <br>
+`sealed trait` : trait의 모든 구현이 반드시 파일 내에 선언되어 있어야 함 <br>
+`case` : data constructor <br>
+`Nil` : 빈 목록 (Empty Collection) <br>
+`Cons` : 비어 있지 않은 목록(Constructor의 줄임말) <br>
